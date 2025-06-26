@@ -8,8 +8,8 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 //----------------------------------------------------------------
-
 // Middlewares
+//----------------------------------------------------------------
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true
@@ -24,20 +24,31 @@ app.use(cookieParser());
 // Routes?
 
 app.get('/status', (req, res) => {
-    res.send("Status: ok");
+    const timestamp = new Date().toLocaleString(); // Local timestamp
+    res.json({
+        status: "ok",
+        timestamp: timestamp
+    });
 })
 
-//----------------------------------------------------------------
+
+//------------------------ Main ------------------------------------
 
 /* Connect db and start */
 connectDB().
 then(() => {
     app.listen(process.env.PORT, () => {
-        console.log(`server running on port: ${process.env.PORT}`);
+        console.log(`server running on port: http://localhost:${process.env.PORT}`);
     })
 }).catch(err => {
     console.log("err db: ", err);
 })
+
+
+
+
+
+
 /*
 import mongoose from "mongoose";
 
