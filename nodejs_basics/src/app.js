@@ -21,7 +21,10 @@ app.use(express.urlencoded({extended: true, limit: "16kb"}));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-// Routes?
+// routes import
+import userRouter from "./routes/user.routes.js"
+
+app.use("/api/v1/users", userRouter);
 
 app.get('/status', (req, res) => {
     const timestamp = new Date().toLocaleString(); // Local timestamp
@@ -31,8 +34,9 @@ app.get('/status', (req, res) => {
     });
 })
 
-
-//------------------------ Main ------------------------------------
+//----------------------------------------------------------------
+//------------------------ Main ----------------------------------
+//----------------------------------------------------------------
 
 /* Connect db and start */
 connectDB().
