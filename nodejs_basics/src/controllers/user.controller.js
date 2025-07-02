@@ -28,7 +28,7 @@ const loginUser = asyncHandler ( async (req, res) => {
 
     const {email, userName, password} = req.body;
 
-    if (!email || !userName)
+    if (!email && !userName)
         throw new ApiError(400, "Please provide email or username");
 
     const user = await User.findOne({
@@ -47,14 +47,15 @@ const loginUser = asyncHandler ( async (req, res) => {
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
+    // cookies can only be modified by server and not from frontend
     const options = {
         httpOnly: true,
         secure: true
     }
 
     return res.status(200)
-            .cookie("accessToken", options)
-            .cookie("refreshToken", options)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(
                     200,
@@ -66,6 +67,29 @@ const loginUser = asyncHandler ( async (req, res) => {
                     "User logged In Successfully"
                 )
         );
+})
+
+const logOutUser = asyncHandler ( async (req, res) => {
+
+    await User.findByIdAndUpdate(req.user._id,
+        {
+            $unset: {refreshToken: 1}// this removes the field from document
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(new ApiResponse(200, {}, "User logged Out"))
+
 })
 
 const registerUser = asyncHandler ( async (req, res) => {
@@ -133,5 +157,6 @@ const registerUser = asyncHandler ( async (req, res) => {
 
 export {
     registerUser,
-    loginUser
+    loginUser,
+    logOutUser,
 }
