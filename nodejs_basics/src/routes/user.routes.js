@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { upload } from "../middlewares/multer.middleware.js"
-import { loginUser, logOutUser, registerUser } from "../controllers/user.controller.js"
+import { loginUser, logOutUser, registerUser, renewAccessToken } from "../controllers/user.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
 
@@ -20,9 +20,14 @@ router.route("/register").post(
     registerUser
 );
 
-router.route("/login").post(loginUser);
+// Send form fields from postman, no files - Use upload.none() middleware
+router.route("/login").post(upload.none(), loginUser);
 
 // secured routes
+
+router.route("/refresh-token").post(renewAccessToken)
+
+
 router.route("/logout").post(verifyJWT, logOutUser);
 
 
