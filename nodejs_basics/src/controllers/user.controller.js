@@ -75,7 +75,9 @@ const logOutUser = asyncHandler ( async (req, res) => {
 
     await User.findByIdAndUpdate(req.user._id,
         {
-            $unset: {refreshToken: ""}// this removes the field from document
+            $unset: {
+                refreshToken: ""
+            }// this removes the field from document
         },
         {
             new: true
@@ -381,18 +383,27 @@ const getWatchHistory = asyncHandler(async(req, res) => {
         {
             $lookup: {
                 from: "videos",
-                localField: "watchHistory",    // Local User field (watchHistory)
-                foreignField: "_id",           // video field (_id)
-                as: "watchHistory",
+                let: { videoIds: "$watchHistory" }, // pass watchHistory array to use in pipeline
                 pipeline: [
                     {
-                        // Now, we are inside watchHistory
+                        $match: {
+                            $expr: {
+                                $in: ["$_id", "$$videoIds"]
+                            }
+                        }
+                    },
+                    {
                         $lookup: {
                             from: "users",
-                            localField: "owner",
-                            foreignField: "_id", // User field (_id)
-                            as: "owner",
+                            let: { ownerId: "$owner" },
                             pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $eq: ["$_id", "$$ownerId"]
+                                        }
+                                    }
+                                },
                                 {
                                     $project: {
                                         userName: 1,
@@ -400,17 +411,17 @@ const getWatchHistory = asyncHandler(async(req, res) => {
                                         avatar: 1
                                     }
                                 }
-                            ]
+                            ],
+                            as: "owner"
                         }
                     },
                     {
                         $addFields: {
-                            owner: {
-                                $first: "$owner"
-                            }
+                            owner: { $first: "$owner" } // flatten owner array to object
                         }
                     }
-                ]
+                ],
+                as: "watchHistory" //overwrite existing array after left join
             }
         }
     ]);

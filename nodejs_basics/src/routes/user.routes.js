@@ -23,9 +23,10 @@ router.route("/register").post(
 // Send form fields from postman, no files - Use upload.none() middleware
 router.route("/login").post(upload.none(), loginUser);
 
+router.route("/refresh-token").post(renewAccessToken);
+
 // secured routes
 
-router.route("/refresh-token").post(renewAccessToken)
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
